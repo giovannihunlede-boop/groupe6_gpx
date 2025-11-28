@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Groupe6">
+  <wpt lat="6.2" lon="1.17">
+    <name>Monument 1</name>
+  </wpt>
+  <wpt lat="6.2" lon="1.17">
+    <name>Monument 2</name>
+  </wpt>
+  <wpt lat="6.13" lon="1.25">
+    <name>Monument 3</name>
+  </wpt>
+  <wpt lat="6.13" lon="1.25">
+    <name>Monument 4</name>
+  </wpt>
+</gpx>
