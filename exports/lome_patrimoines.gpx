@@ -1,15 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" creator="Groupe6">
-  <wpt lat="6.2" lon="1.17">
-    <name>Monument 1</name>
+  <wpt lat="6.18" lon="1.2">
+    <name>Centre de lome</name>
+    <sym>Star</sym>
+    <type>CentreVille</type>
   </wpt>
   <wpt lat="6.2" lon="1.17">
+    <name>Monument 1</name>
+    <sym>Historic</sym>
+    <type>Monument</type>
+  </wpt>
+  <wpt lat="6.21" lon="1.18">
     <name>Monument 2</name>
+    <sym>Historic</sym>
+    <type>Monument</type>
   </wpt>
   <wpt lat="6.13" lon="1.25">
     <name>Monument 3</name>
-  </wpt>
-  <wpt lat="6.13" lon="1.25">
-    <name>Monument 4</name>
+    <sym>Historic</sym>
+    <type>Monument</type>
   </wpt>
 </gpx>
