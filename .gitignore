@@ -1,5 +1,15 @@
-exports/
+# Python
 __pycache__/
 *.pyc
-venv/
 .env
+
+# Environnement virtuel
+venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+
+# Base de données locale (si tu as des dumps)
+*.sql
