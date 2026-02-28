@@ -1,0 +1,841 @@
+/* ===================================
+   IMPORTATION DES POLICES GOOGLE
+   =================================== */
+/* Importation de la police Inter pour une typographie moderne */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ===================================
+   VARIABLES CSS & TOKENS DE DESIGN
+   ===================================
+*/
+:root {
+    /* Couleurs principales */
+    --primary: #6366f1;
+    /* Violet principal */
+    --primary-dark: #4f46e5;
+    /* Violet foncé */
+    --primary-light: #818cf8;
+    /* Violet clair */
+    --secondary: #ec4899;
+    /* Rose secondaire */
+    --secondary-dark: #db2777;
+    /* Rose foncé */
+    --accent: #14b8a6;
+    /* Turquoise accent */
+    --accent-dark: #0d9488;
+    /* Turquoise foncé */
+
+    /* Dégradés de couleurs pour les effets visuels */
+    --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --gradient-accent: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    --gradient-dark: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+
+    /* Couleurs neutres (échelle de gris) */
+    --white: #ffffff;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+
+    /* Couleurs sémantiques pour les messages */
+    --success: #10b981;
+    /* Vert pour succès */
+    --warning: #f59e0b;
+    /* Orange pour avertissement */
+    --error: #ef4444;
+    /* Rouge pour erreur */
+    --info: #3b82f6;
+    /* Bleu pour information */
+
+    /* Espacements standardisés */
+    --spacing-xs: 0.5rem;
+    /* 8px */
+    --spacing-sm: 0.75rem;
+    /* 12px */
+    --spacing-md: 1rem;
+    /* 16px */
+    --spacing-lg: 1.5rem;
+    /* 24px */
+    --spacing-xl: 2rem;
+    /* 32px */
+    --spacing-2xl: 3rem;
+    /* 48px */
+
+    /* Rayons de bordure pour les coins arrondis */
+    --radius-sm: 0.375rem;
+    /* Petit arrondi */
+    --radius-md: 0.5rem;
+    /* Arrondi moyen */
+    --radius-lg: 0.75rem;
+    /* Grand arrondi */
+    --radius-xl: 1rem;
+    /* Très grand arrondi */
+    --radius-full: 9999px;
+    /* Arrondi complet (cercle) */
+
+    /* Ombres pour la profondeur visuelle */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.3);
+    /* Ombre lumineuse */
+
+    /* Durées de transition pour les animations */
+    --transition-fast: 150ms ease-in-out;
+    /* Rapide */
+    --transition-base: 250ms ease-in-out;
+    /* Normal */
+    --transition-slow: 350ms ease-in-out;
+    /* Lent */
+}
+
+/* ===================================
+   RÉINITIALISATION & STYLES DE BASE
+   ===================================
+   
+   Réinitialise les styles par défaut du navigateur
+   pour un rendu cohérent sur tous les navigateurs.
+*/
+* {
+    margin: 0;
+    /* Supprime les marges par défaut */
+    padding: 0;
+    /* Supprime les padding par défaut */
+    box-sizing: border-box;
+    /* Inclut padding et border dans la taille */
+}
+
+html {
+    font-size: 16px;
+    /* Taille de base pour rem */
+    scroll-behavior: smooth;
+    /* Défilement fluide pour les ancres */
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
+    /* Hauteur de ligne pour la lisibilité */
+    color: var(--gray-800);
+    /* Couleur de texte par défaut */
+    background: var(--gradient-dark);
+    /* Arrière-plan dégradé */
+    min-height: 100vh;
+    /* Hauteur minimale de la fenêtre */
+    overflow-x: hidden;
+    /* Empêche le défilement horizontal */
+}
+
+/* ===================================
+   ARRIÈRE-PLAN ANIMÉ
+   ===================================
+   
+   Crée un arrière-plan avec des cercles de couleur
+   qui pulsent doucement pour un effet dynamique.
+*/
+body::before {
+    content: '';
+    position: fixed;
+    /* Fixe l'arrière-plan */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Trois cercles de couleur positionnés différemment */
+    background:
+        radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 40% 20%, rgba(20, 184, 166, 0.15) 0%, transparent 50%);
+    animation: backgroundShift 15s ease-in-out infinite;
+    z-index: -1;
+    /* Place l'arrière-plan derrière le contenu */
+}
+
+/* Animation de pulsation de l'arrière-plan */
+@keyframes backgroundShift {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.8;
+    }
+}
+
+/* ===================================
+   TYPOGRAPHIE
+   ===================================
+   
+   Styles pour les titres et le texte.
+*/
+
+/* Styles communs pour tous les titres */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-weight: 700;
+    /* Texte en gras */
+    line-height: 1.2;
+    /* Hauteur de ligne serrée */
+    color: var(--white);
+    /* Couleur blanche */
+    margin-bottom: var(--spacing-md);
+}
+
+/* Tailles spécifiques pour chaque niveau de titre */
+h1 {
+    font-size: 2.5rem;
+}
+
+/* 40px */
+h2 {
+    font-size: 2rem;
+}
+
+/* 32px */
+h3 {
+    font-size: 1.75rem;
+}
+
+/* 28px */
+h4 {
+    font-size: 1.5rem;
+}
+
+/* 24px */
+h5 {
+    font-size: 1.25rem;
+}
+
+/* 20px */
+h6 {
+    font-size: 1rem;
+}
+
+/* 16px */
+
+/* Paragraphes */
+p {
+    margin-bottom: var(--spacing-md);
+    color: var(--gray-300);
+    /* Gris clair pour le texte secondaire */
+}
+
+/* Liens */
+a {
+    color: var(--primary-light);
+    /* Couleur violette claire */
+    text-decoration: none;
+    /* Pas de soulignement */
+    transition: color var(--transition-base);
+}
+
+a:hover {
+    color: var(--white);
+    /* Blanc au survol */
+}
+
+/* ===================================
+   CONTENEUR & MISE EN PAGE
+   =================================== */
+
+/* Conteneur principal pour centrer le contenu */
+.container {
+    width: 100%;
+    max-width: 1200px;
+    /* Largeur maximale */
+    margin: 0 auto;
+    /* Centre horizontalement */
+    padding: 0 var(--spacing-lg);
+}
+
+/* Wrapper de page pour centrer verticalement */
+.page-wrapper {
+    min-height: 100vh;
+    /* Hauteur minimale de la fenêtre */
+    display: flex;
+    align-items: center;
+    /* Centre verticalement */
+    justify-content: center;
+    /* Centre horizontalement */
+    padding: var(--spacing-xl) var(--spacing-md);
+}
+
+/* ===================================
+   CARTE GLASSMORPHISM
+   ===================================
+   
+   Effet de verre dépoli moderne avec transparence
+   et flou d'arrière-plan.
+*/
+.glass-card {
+    background: rgba(255, 255, 255, 0.1);
+    /* Fond semi-transparent */
+    backdrop-filter: blur(10px);
+    /* Flou d'arrière-plan */
+    -webkit-backdrop-filter: blur(10px);
+    /* Support Safari */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-2xl);
+    box-shadow: var(--shadow-xl);
+    transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+/* Effet au survol de la carte */
+.glass-card:hover {
+    transform: translateY(-2px);
+    /* Légère élévation */
+    box-shadow: var(--shadow-xl), var(--shadow-glow);
+    /* Ombre lumineuse */
+}
+
+/* ===================================
+   ÉLÉMENTS DE FORMULAIRE
+   =================================== */
+
+/* Groupe de champ de formulaire */
+.form-group {
+    background-color: var(--gradient-dark);
+    border-radius: var(--radius-xl);
+    margin-bottom: var(--spacing-lg);
+}
+
+/* Label de formulaire */
+.form-label {
+    display: block;
+    margin-bottom: var(--spacing-xs);
+    font-weight: 500;
+    color: var(--white);
+    font-size: 0.875rem;
+    /* 14px */
+    text-transform: uppercase;
+    /* Texte en majuscules */
+    letter-spacing: 0.5px;
+    /* Espacement des lettres */
+}
+
+/* Champ de saisie de formulaire */
+.form-input {
+    width: 100%;
+    padding: 0.875rem var(--spacing-md);
+    background: rgba(255, 255, 255, 0.1);
+    /* Fond semi-transparent */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-md);
+    color: var(--black);
+    font-size: 1rem;
+    font-family: inherit;
+    /* Hérite la police du parent */
+    transition: all var(--transition-base);
+    backdrop-filter: blur(5px);
+    /* Flou léger */
+}
+
+/* Texte placeholder dans les champs */
+.form-input::placeholder {
+    color: rgba(255, 255, 255, 0.614);
+    /* Blanc semi-transparent */
+}
+
+/* État focus (quand le champ est sélectionné) */
+.form-input:focus {
+    outline: none;
+    /* Supprime le contour par défaut */
+    border-color: var(--primary-light);
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    /* Halo de focus */
+}
+
+/* État hover (au survol) */
+.form-input:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Zone de texte (textarea) */
+textarea.form-input {
+    resize: vertical;
+    /* Redimensionnement vertical uniquement */
+    min-height: 100px;
+}
+
+/* ===================================
+   BOUTONS
+   =================================== */
+
+/* Style de base pour tous les boutons */
+.btn {
+    display: inline-block;
+    padding: 0.875rem var(--spacing-xl);
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: center;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    /* Curseur pointeur */
+    transition: all var(--transition-base);
+    font-family: inherit;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+    /* Cache le débordement pour l'effet */
+}
+
+/* Effet d'ondulation au clic (ripple effect) */
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    /* Forme circulaire */
+    background: rgba(255, 255, 255, 0.2);
+    transform: translate(-50%, -50%);
+    transition: width var(--transition-slow), height var(--transition-slow);
+}
+
+/* Expansion de l'ondulation au survol */
+.btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+/* Bouton principal (style violet) */
+.btn-primary {
+    background: var(--gradient-primary);
+    color: var(--white);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    /* Élévation au survol */
+    box-shadow: var(--shadow-lg), var(--shadow-glow);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+    /* Retour à la position normale au clic */
+}
+
+/* Bouton secondaire (style rose) */
+.btn-secondary {
+    background: var(--gradient-secondary);
+    color: var(--white);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Bouton avec contour uniquement */
+.btn-outline {
+    background: transparent;
+    color: var(--white);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-outline:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--white);
+}
+
+/* Bouton pleine largeur */
+.btn-block {
+    width: 100%;
+    display: block;
+}
+
+/* ===================================
+   CHECKBOX & RADIO
+   =================================== */
+
+/* Conteneur pour checkbox avec label */
+.checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+}
+
+/* Style de la checkbox */
+.checkbox-input {
+    width: 1.25rem;
+    height: 1.25rem;
+    cursor: pointer;
+    accent-color: var(--primary);
+    /* Couleur de la checkbox cochée */
+}
+
+/* Label de la checkbox */
+.checkbox-label {
+    color: var(--gray-300);
+    cursor: pointer;
+    user-select: none;
+    /* Empêche la sélection du texte */
+}
+
+/* ===================================
+   ALERTES & MESSAGES
+   =================================== */
+
+/* Style de base pour les alertes */
+.alert {
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-lg);
+    font-weight: 500;
+    animation: slideIn 0.3s ease-out;
+    /* Animation d'entrée */
+}
+
+/* Animation de glissement vers le bas */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Alerte de succès (verte) */
+.alert-success {
+    background: rgba(16, 185, 129, 0.2);
+    border: 1px solid var(--success);
+    color: var(--success);
+}
+
+/* Alerte d'erreur (rouge) */
+.alert-error {
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid var(--error);
+    color: var(--error);
+}
+
+/* Alerte d'avertissement (orange) */
+.alert-warning {
+    background: rgba(245, 158, 11, 0.2);
+    border: 1px solid var(--warning);
+    color: var(--warning);
+}
+
+/* ===================================
+   CARTES & LISTES
+   =================================== */
+
+/* Carte pour afficher du contenu */
+.card {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+    transition: all var(--transition-base);
+}
+
+/* Effet au survol de la carte */
+.card:hover {
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateX(5px);
+    /* Glissement vers la droite */
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+/* Titre de la carte */
+.card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: var(--spacing-sm);
+}
+
+/* Texte de la carte */
+.card-text {
+    color: var(--gray-300);
+    margin-bottom: var(--spacing-sm);
+}
+
+/* ===================================
+   SYSTÈME DE GRILLE
+   =================================== */
+
+/* Grille de base */
+.grid {
+    display: grid;
+    gap: var(--spacing-lg);
+}
+
+/* Grille à 2 colonnes (responsive) */
+.grid-2 {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+/* Grille à 3 colonnes (responsive) */
+.grid-3 {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+/* ===================================
+   BARRE DE RECHERCHE
+   =================================== */
+
+/* Conteneur de la barre de recherche */
+.search-wrapper {
+    position: relative;
+    margin-bottom: var(--spacing-xl);
+}
+
+/* Champ de recherche */
+.search-input {
+    width: 100%;
+    padding: 1rem 3rem 1rem var(--spacing-lg);
+    /* Espace pour l'icône */
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-full);
+    /* Complètement arrondi */
+    color: var(--white);
+    font-size: 1rem;
+    transition: all var(--transition-base);
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--primary-light);
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+/* Icône de recherche */
+.search-icon {
+    position: absolute;
+    right: var(--spacing-lg);
+    top: 50%;
+    transform: translateY(-50%);
+    /* Centre verticalement */
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 1.25rem;
+}
+
+/* ===================================
+   NAVIGATION
+   =================================== */
+
+/* Conteneur des liens de navigation */
+.nav-links {
+    display: flex;
+    gap: var(--spacing-lg);
+    justify-content: center;
+    margin-top: var(--spacing-lg);
+    flex-wrap: wrap;
+    /* Retour à la ligne si nécessaire */
+}
+
+/* Lien de navigation */
+.nav-link {
+    color: var(--gray-300);
+    font-size: 0.875rem;
+    transition: color var(--transition-base);
+}
+
+.nav-link:hover {
+    color: var(--white);
+}
+
+/* ===================================
+   EN-TÊTE DE PAGE
+   =================================== */
+
+/* En-tête centré */
+.page-header {
+    text-align: center;
+    margin-bottom: var(--spacing-2xl);
+}
+
+/* Titre de page avec effet de dégradé */
+.page-title {
+    font-size: 2.5rem;
+    background: linear-gradient(135deg, var(--white) 0%, var(--primary-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: var(--spacing-sm);
+}
+
+/* Sous-titre de page */
+.page-subtitle {
+    color: var(--gray-300);
+    font-size: 1.125rem;
+}
+
+/* ===================================
+   CLASSES UTILITAIRES
+   =================================== */
+
+/* Alignement du texte */
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.text-left {
+    text-align: left;
+}
+
+/* Marges supérieures */
+.mt-sm {
+    margin-top: var(--spacing-sm);
+}
+
+.mt-md {
+    margin-top: var(--spacing-md);
+}
+
+.mt-lg {
+    margin-top: var(--spacing-lg);
+}
+
+.mt-xl {
+    margin-top: var(--spacing-xl);
+}
+
+/* Marges inférieures */
+.mb-sm {
+    margin-bottom: var(--spacing-sm);
+}
+
+.mb-md {
+    margin-bottom: var(--spacing-md);
+}
+
+.mb-lg {
+    margin-bottom: var(--spacing-lg);
+}
+
+.mb-xl {
+    margin-bottom: var(--spacing-xl);
+}
+
+/* Visibilité */
+.hidden {
+    display: none;
+}
+
+.visible {
+    display: block;
+}
+
+/* ===================================
+   DESIGN RESPONSIVE
+   ===================================
+   
+   Adaptation pour les tablettes et mobiles.
+*/
+
+/* Tablettes (écrans moyens) */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2rem;
+    }
+
+    h2 {
+        font-size: 1.75rem;
+    }
+
+    .glass-card {
+        padding: var(--spacing-lg);
+    }
+
+    .page-wrapper {
+        padding: var(--spacing-md);
+    }
+
+    /* Grilles en une seule colonne */
+    .grid-2,
+    .grid-3 {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Mobiles (petits écrans) */
+@media (max-width: 480px) {
+    html {
+        font-size: 14px;
+        /* Réduit la taille de base */
+    }
+
+    .page-title {
+        font-size: 2rem;
+    }
+
+    .btn {
+        padding: 0.75rem var(--spacing-lg);
+    }
+}
+
+/* ===================================
+   ANIMATIONS
+   =================================== */
+
+/* Animation d'apparition en fondu */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Classe pour appliquer l'animation de fondu */
+.fade-in {
+    animation: fadeIn 0.6s ease-out;
+}
+
+/* Animation de pulsation */
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* Classe pour appliquer l'animation de pulsation */
+.pulse {
+    animation: pulse 2s ease-in-out infinite;
+}

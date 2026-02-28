@@ -1,21 +1,25 @@
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
+from py_bd.config_db import DB_CONFIG
+DB_URL = "postgresql://postgres:Master@localhost:5432/ton_nom_bd"
 
 def get_db_connection():
     """Établit la connexion à PostgreSQL"""
     try:
-        conn = psycopg2.connect(
-            host="localhost",
-            database="patrimoine_db",
-            user="postgres",
-            password="Master",  # Mets le mot de passe que tu as configuré
-            port="5432"
-        )
+        conn = psycopg2.connect(**DB_CONFIG)
+        conn.set_client_encoding('UTF8')
         return conn
     except Exception as e:
-        print(f"Erreur de connexion : {e}")
-        return None
+        try:
+            import os
+            # On nettoie les variables d'environnement qui pourraient forcer un mauvais encodage
+            os.environ['PGCLIENTENCODING'] = 'utf8'
+            conn = psycopg2.connect("host=localhost dbname=patrimoine_db user=postgres password=votre_password")
+            return conn
+        except Exception as e2:
+            print(f"Erreur de connexion persistante : {e2}")
+            return None
 
 
 def get_patrimoines():
@@ -24,7 +28,7 @@ def get_patrimoines():
     if not conn: return []
 
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    # On fait une jointure pour avoir le nom de la ville au lieu de l'ID
+    # On fait une jointure pour avoir le nom de la ville
     query = """
         SELECT p.nom_patrimoine as nom, p.latitude as lat, p.longitude as lon, v.nom_ville as ville
         FROM patrimoines p
@@ -35,6 +39,7 @@ def get_patrimoines():
     cur.close()
     conn.close()
     return data
+
 
 def get_zones_villes():
     """Récupère les polygones des villes pour le filtrage"""
@@ -50,61 +55,25 @@ def get_zones_villes():
     for row in rows:
         nom_ville = row[0].lower()
         wkt = row[1]
-        # Transformation du WKT "POLYGON((...))" en liste de tuples (lat, lon)
-        # Note: Dans PostGIS, c'est souvent (Lon Lat), on inverse pour ton code
-        coords_str = wkt.replace("POLYGON((", "").replace("))", "")
-        coords_list = []
-        for pair in coords_str.split(","):
-            lon, lat = map(float, pair.strip().split())
-            coords_list.append((lat, lon))
-        zones[nom_ville] = coords_list
+
+        # --- LA CORRECTION EST ICI ---
+        # Si la ville n'a pas de polygone (NULL en base), on l'ignore proprement
+        if wkt is None:
+            print(f"⚠️ Attention : La ville '{nom_ville}' n'a pas de délimitation (polygone) en base.")
+            continue
+
+            # Transformation du WKT "POLYGON((...))" en liste de tuples (lat, lon)
+        try:
+            coords_str = wkt.replace("POLYGON((", "").replace("))", "")
+            coords_list = []
+            for pair in coords_str.split(","):
+                lon, lat = map(float, pair.strip().split())
+                coords_list.append((lat, lon))
+            zones[nom_ville] = coords_list
+        except Exception as e:
+            print(f"❌ Erreur de lecture du polygone pour {nom_ville} : {e}")
 
     cur.close()
     conn.close()
     return zones
 
-
-def build_kml_content(patrimoines, city_name, polygon_coords):
-    """Génère un fichier KML riche pour Google Earth"""
-    kml = f'''<?xml version="1.0" encoding="UTF-8"?>
-<kml xmlns="http://www.opengis.net/kml/2.2">
-  <Document>
-    <name>Patrimoine de {city_name.capitalize()}</name>
-
-    <Style id="cityPoly">
-      <LineStyle><color>ff0000ff</color><width>2</width></LineStyle>
-      <PolyStyle><color>400000ff</color></PolyStyle>
-    </Style>
-
-    <Style id="monumentIcon">
-      <IconStyle><color>ff00ff00</color><scale>1.1</scale><Icon><href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href></Icon></IconStyle>
-    </Style>
-
-    <Placemark>
-      <name>Limites de {city_name}</name>
-      <styleUrl>#cityPoly</styleUrl>
-      <Polygon>
-        <outerBoundaryIs>
-          <LinearRing>
-            <coordinates>
-              {" ".join([f"{lon},{lat},0" for lat, lon in polygon_coords])}
-            </coordinates>
-          </LinearRing>
-        </outerBoundaryIs>
-      </Polygon>
-    </Placemark>
-'''
-    # 2. Ajout des points (Monuments)
-    for p in patrimoines:
-        kml += f'''
-    <Placemark>
-      <name>{p['nom']}</name>
-      <description>{p.get('description', 'Aucune description')}</description>
-      <styleUrl>#monumentIcon</styleUrl>
-      <Point>
-        <coordinates>{p['lon']},{p['lat']},0</coordinates>
-      </Point>
-    </Placemark>'''
-
-    kml += '\n  </Document>\n</kml>'
-    return kml

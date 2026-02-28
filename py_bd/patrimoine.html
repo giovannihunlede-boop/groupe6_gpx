@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Giga Patrimoines</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        body { background-color: #1a4a76; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+        .container { max-width: 1200px; margin: auto; padding: 20px; }
+        .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .header-right { display: flex; align-items: center; gap: 15px; }
+
+        /* Les vraies couleurs de ton design ! */
+        .btn { padding: 10px 20px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; color: white; display: flex; align-items: center; gap: 8px; }
+        .btn-pink { background: linear-gradient(45deg, #ff6b81, #ff4757); } /* Rose pour IMPORT/EXPORT */
+        .btn-purple { background: linear-gradient(45deg, #a29bfe, #6c5ce7); } /* Violet pour AJOUTER/VALIDER/MODE TRAJET */
+        .btn-grey { background: #34495e; color: #ecf0f1; border: 1px solid #7f8c8d; } /* Quitter */
+        .btn-white { background: white; color: #2c3e50; font-size:0.8em; padding:5px 10px; }
+
+        .user-badge { display: flex; align-items: center; gap: 10px; color: white; }
+        .avatar-circle { width: 32px; height: 32px; background: #1abc9c; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+
+        #map { height: 450px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .glass-card { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); }
+        .city-group { margin-top: 15px; border-left: 4px solid #1abc9c; padding-left: 15px; }
+        .heritage-item { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; margin-bottom: 8px; }
+        .actions-btns { display: flex; gap: 8px; }
+        .btn-icon { padding: 8px 12px; border-radius: 6px; border: none; cursor: pointer; color: white; }
+        .btn-trash { background: rgba(255, 255, 255, 0.2); }
+        .btn-eye { background: #6c5ce7; }
+
+        /* Modale */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
+        .modal.active { display: flex; }
+        .form-input { width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; }
+
+        /* Style pour les sélecteurs */
+        select.form-input { background-color: white; color: #333; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-bar">
+            <div>
+                <h1 style="color:white; margin:0;">Giga Patrimoines</h1>
+                <p style="color:#bdc3c7; margin:0; font-size: 0.9em;">Giga Tech Team - Togo</p>
+            </div>
+            <div class="header-right">
+                <input type="file" id="gpxInput" style="display:none" onchange="importGPX(event)">
+                <button class="btn btn-pink" onclick="document.getElementById('gpxInput').click()">📥 IMPORT </button>
+
+                <button class="btn btn-pink" onclick="fetchUsers()">👥 USERS</button>
+
+                <div class="user-badge">
+                    <div class="avatar-circle">G</div>
+                    <div style="display: flex; flex-direction: column; font-size: 0.9em;">
+                        <span id="userName" style="font-weight:bold;">Giovanni</span>
+                        <a href="#" style="color:#ff4757; text-decoration:none; font-size:0.8em;">Déconnexion</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="map"></div>
+
+        <div class="glass-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+                <h2 style="color:white; margin:0;" id="sectionTitle">🏛️ Sites par Ville</h2>
+
+                <div id="standardControls" style="display:flex; gap:10px;">
+                    <button class="btn btn-pink" onclick="exportData(null)">📥 EXPORT COMPLET</button>
+                    <button class="btn btn-purple" onclick="openAddModal()">➕ AJOUTER</button>
+                    <button class="btn btn-purple" onclick="toggleRouteMode(true)">🛣️ MODE TRAJET</button>
+                </div>
+
+                <div id="routeControls" style="display:none; gap:10px;">
+                    <button class="btn btn-purple" onclick="confirmRoute()">✅ VALIDER</button>
+                    <button class="btn btn-grey" onclick="toggleRouteMode(false)" style="color:#ff4757;">❌ QUITTER</button>
+                </div>
+            </div>
+
+            <div id="heritageList"></div>
+        </div>
+    </div>
+
+    <div id="heritageModal" class="modal">
+        <div class="glass-card" style="width:400px; background:#2c3e50;">
+            <h2 style="color:white; margin-top:0;">Nouveau Site</h2>
+            <form id="heritageForm" onsubmit="saveHeritage(event)">
+                <input type="text" id="hName" class="form-input" placeholder="Nom du patrimoine" required>
+                <textarea id="hDesc" class="form-input" placeholder="Description" rows="3"></textarea>
+
+                <select id="hType" class="form-input" required>
+                    <option value="" disabled selected>Sélectionner un type...</option>
+                    <option value="Monument Historique">Monument Historique</option>
+                    <option value="Site Naturel">Site Naturel</option>
+                    <option value="Musée">Musée</option>
+                    <option value="Édifice Religieux">Édifice Religieux</option>
+                    <option value="Autre">Autre</option>
+                </select>
+
+                <select id="hVille" class="form-input" required>
+                    <option value="" disabled selected>Sélectionner une ville...</option>
+                    <option value="1">Lomé</option>
+                    <option value="2">Aného</option>
+                    <option value="3">Kpalimé</option>
+                    <option value="4">Sokodé</option>
+                    <option value="5">Kara</option>
+                    <option value="6">Dapaong</option>
+                </select>
+
+                <div style="display:flex; gap:10px;">
+                    <input type="number" step="any" id="hLat" class="form-input" placeholder="Latitude" required>
+                    <input type="number" step="any" id="hLng" class="form-input" placeholder="Longitude" required>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <button type="button" class="btn btn-grey" style="flex:1" onclick="closeModal()">Annuler</button>
+                    <button type="submit" class="btn btn-purple" style="flex:1">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="usersModal" class="modal">
+        <div class="glass-card" style="width:400px; background:#2c3e50;">
+            <h2 style="color:white; margin-top:0;">Liste des Utilisateurs</h2>
+            <div id="usersList" style="color:white; margin-bottom:15px; max-height: 200px; overflow-y: auto;"></div>
+            <button type="button" class="btn btn-grey" style="width:100%;" onclick="document.getElementById('usersModal').classList.remove('active')">Fermer</button>
+        </div>
+    </div>
+
+    <script>
+    const greenIcon = new L.Icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41], iconAnchor: [12, 41]
+        });
+
+        const API_URL = 'http://localhost:5000/api';
+        let map, heritages = [], markers = [], isRouteMode = false;
+        let routePoints = [], currentRouteLine = null, selectedMarkers = [];
+        let fullRouteCoords = [];
+
+        const blueIcon = new L.Icon.Default();
+        const redIcon = new L.Icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initMap();
+            loadHeritages();
+        });
+
+        function initMap() {
+            map = L.map('map').setView([6.13, 1.22], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        }
+
+        async function loadHeritages() {
+            try {
+                const res = await fetch(`${API_URL}/heritages`);
+                const data = await res.json();
+                heritages = data.heritages || [];
+                displayHeritages();
+                updateMarkers();
+            } catch (err) { console.error("Erreur de chargement:", err); }
+        }
+
+        function updateMarkers() {
+            markers.forEach(m => map.removeLayer(m));
+            markers = [];
+            heritages.forEach(h => {
+                if (h.latitude && h.longitude) {
+                    const m = L.marker([h.latitude, h.longitude], {icon: blueIcon}).addTo(map);
+                    m.bindPopup(`<b>${h.nom_patrimoine}</b><br>${h.nom_ville}`);
+
+                    m.on('click', () => {
+                        if(isRouteMode) {
+                            if(routePoints.length < 2) {
+                                routePoints.push([h.latitude, h.longitude]);
+                                selectedMarkers.push(m);
+                                m.setIcon(redIcon);
+                                if(routePoints.length === 2) { drawRoute(); }
+                            } else {
+                                alert("Deux points maximum. Quittez pour recommencer.");
+                            }
+                        }
+                    });
+                    markers.push(m);
+                } else {
+                    console.error("Coordonnées invalides pour :", h.nom_patrimoine);
+                }
+            });
+        }
+
+        function displayHeritages() {
+            const list = document.getElementById('heritageList');
+            const groups = {};
+
+            heritages.forEach(h => {
+                if (!groups[h.nom_ville]) groups[h.nom_ville] = {id: h.id_ville, items: []};
+                groups[h.nom_ville].items.push(h);
+            });
+
+            list.innerHTML = Object.entries(groups).map(([ville, data]) => `
+                <div class="city-group">
+                    <h3 style="color:#1abc9c;">📍 ${ville}</h3>
+                    <button class="btn btn-white" onclick="exportData(${data.id})">
+                        💾 EXPORT ${ville.toUpperCase()}
+                    </button>
+                    ${data.items.map(h => `
+                        <div class="heritage-item">
+                            <div>
+                                <strong style="color:white;">${h.nom_patrimoine}</strong>
+                                <span style="color:#aaa; font-size:0.8em;">ID: ${h.id_patrimoine}</span>
+                            </div>
+                            <div class="actions-btns">
+                                <button class="btn-icon btn-trash" onclick="deleteHeritage(${h.id_patrimoine})">🗑️</button>
+                                <button class="btn-icon btn-eye" onclick="focusOnMap(${h.latitude}, ${h.longitude}, '${h.nom_patrimoine.replace(/'/g, "\\'")}')">👁️</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `).join('');
+        }
+
+        // Ajoute cette petite fonction pour un centrage propre avec popup
+        function focusOnMap(lat, lng, name) {
+            map.setView([lat, lng], 16);
+            // On cherche le marqueur correspondant pour ouvrir sa popup
+            markers.forEach(m => {
+                if(m.getLatLng().lat === lat && m.getLatLng().lng === lng) {
+                    m.openPopup();
+                }
+            });
+        }
+
+
+        function toggleRouteMode(active) {
+            isRouteMode = active;
+            document.getElementById('standardControls').style.display = active ? 'none' : 'flex';
+            document.getElementById('routeControls').style.display = active ? 'flex' : 'none';
+            document.getElementById('heritageList').style.display = active ? 'none' : 'block';
+            document.getElementById('sectionTitle').innerText = active ? "🗺️ Tracé de Trajet" : "🏛️ Sites par Ville";
+
+            if(!active) {
+                routePoints = [];
+                fullRouteCoords = [];
+                if(currentRouteLine) map.removeLayer(currentRouteLine);
+                selectedMarkers.forEach(m => m.setIcon(blueIcon));
+                selectedMarkers = [];
+            } else {
+                alert("Sélectionnez 2 sites bleus pour tracer l'itinéraire.");
+            }
+        }
+
+        async function drawRoute() {
+            const url = `https://router.project-osrm.org/route/v1/driving/${routePoints[0][1]},${routePoints[0][0]};${routePoints[1][1]},${routePoints[1][0]}?overview=full&geometries=geojson`;
+            const res = await fetch(url);
+            const data = await res.json();
+
+            fullRouteCoords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+
+            if(currentRouteLine) map.removeLayer(currentRouteLine);
+            currentRouteLine = L.polyline(fullRouteCoords, {color: '#ff4757', weight: 6}).addTo(map);
+
+            const duration = Math.round(data.routes[0].duration / 60);
+            currentRouteLine.bindTooltip(`Trajet : ${duration} min`, {permanent: true}).openTooltip();
+        }
+
+        // LA VERSION UNIQUE ET CORRECTE DE CONFIRMATION
+        async function confirmRoute() {
+            if (fullRouteCoords.length === 0) {
+                alert("Tracez un trajet d'abord !");
+                return;
+            }
+
+            // DEMANDE DU FORMAT
+            const fmt = prompt("Sous quel format voulez-vous exporter le trajet ? (gpx, kml, csv)", "kml");
+
+            if (!fmt) return; // Si l'utilisateur annule
+
+            try {
+                const response = await fetch(`${API_URL}/export/route`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        coords: fullRouteCoords,
+                        format: fmt.toLowerCase()
+                    })
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `trajet_giga_tech.${fmt.toLowerCase()}`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    alert(`✅ Trajet exporté en ${fmt.toUpperCase()} !`);
+                }
+            } catch (error) {
+                console.error("Erreur export trajet:", error);
+                alert("Erreur lors du téléchargement.");
+            }
+            toggleRouteMode(false);
+        }
+
+        async function fetchUsers() {
+            try {
+                const res = await fetch(`${API_URL}/users`);
+                const data = await res.json();
+                const list = document.getElementById('usersList');
+                list.innerHTML = data.users.map(u => `
+                    <div style="background: rgba(255,255,255,0.1); padding: 8px; border-radius: 5px; margin-bottom: 5px;">
+                        <b>${u.username}</b> (${u.email || 'Pas email'})
+                    </div>
+                `).join('');
+                document.getElementById('usersModal').classList.add('active');
+            } catch(e) { alert("Erreur DB !"); }
+        }
+
+        async function importGPX(event) {
+            const file = event.target.files[0];
+            if(!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                // On appelle la nouvelle route universelle
+                const res = await fetch(`${API_URL}/import/file`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    // SI SUCCÈS : On affiche le message du serveur et on recharge
+                    alert("✅ " + (data.message || "Importation réussie !"));
+
+                    // On nettoie l'input pour pouvoir ré-importer le même fichier si besoin
+                    event.target.value = "";
+
+                    // On recharge la liste et les marqueurs
+                    await loadHeritages();
+                } else {
+                    // SI LE SERVEUR RENVOIE UNE ERREUR (ex: 400 ou 500)
+                    alert("❌ Erreur serveur : " + (data.error || "Erreur inconnue"));
+                }
+
+            } catch(e) {
+                // SI LE FETCH ÉCHOUE (ex: Serveur éteint)
+                console.error("Erreur critique :", e);
+                alert("⚠️ Impossible de contacter le serveur.");
+            }
+        }
+
+        function openAddModal() {
+            // Reset le formulaire à l'ouverture
+            document.getElementById('heritageForm').reset();
+            document.getElementById('heritageModal').classList.add('active');
+        }
+        function closeModal() { document.getElementById('heritageModal').classList.remove('active'); }
+
+        // FONCTION MODIFIÉE POUR ENVOYER LE TYPE ET LA VILLE
+        async function saveHeritage(e) {
+            e.preventDefault();
+            const data = {
+                name: document.getElementById('hName').value,
+                description: document.getElementById('hDesc').value,
+                latitude: parseFloat(document.getElementById('hLat').value),
+                longitude: parseFloat(document.getElementById('hLng').value),
+                type: document.getElementById('hType').value,      // Ajout
+                ville_id: parseInt(document.getElementById('hVille').value) // Ajout
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/heritages`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    closeModal();
+                    loadHeritages();
+                } else {
+                    const errData = await response.json();
+                    alert("Erreur lors de l'enregistrement : " + errData.error);
+                }
+            } catch (error) {
+                console.error("Erreur saveHeritage:", error);
+                alert("Erreur de connexion au serveur.");
+            }
+        }
+
+        async function deleteHeritage(id) {
+            if(confirm("Supprimer ce site définitivement ?")) {
+                try {
+                    const response = await fetch(`${API_URL}/heritages/${id}`, { method: 'DELETE' });
+                    if (response.ok) {
+                        loadHeritages(); // Recharge la liste si succès
+                    } else {
+                        alert("Erreur lors de la suppression côté serveur.");
+                    }
+                } catch(error) {
+                    console.error("Erreur deleteHeritage:", error);
+                    alert("Erreur de connexion.");
+                }
+            }
+        }
+
+        function exportData(villeId = null) {
+            if(villeId) {
+                const h = heritages.find(site => site.id_ville === villeId);
+                if(h) {
+                    L.circle([h.latitude, h.longitude], {color: 'red', radius: 5000}).addTo(map);
+                    map.setView([h.latitude, h.longitude], 12);
+                }
+            }
+            const fmt = prompt("Format souhaiter (csv, gpx, kml) ?", "kml");
+            if (!fmt) return;
+            const paramVille = (villeId === null) ? 'all' : villeId;
+            if(fmt) window.location.href = `${API_URL}/export?format=${fmt.toLowerCase()}&ville_id=${paramVille}`;
+        }
+    </script>
+</body>
+</html>

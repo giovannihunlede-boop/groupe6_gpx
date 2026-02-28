@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="fr">
+<!--
+  ========================================
+  PAGE D'INSCRIPTION
+  ========================================
+-->
+
+<head>
+
+    <meta charset="UTF-8">
+
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+    <title>Inscription - Application de Géolocalisation</title>
+
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <div class="page-wrapper">
+
+
+        <div class="glass-card fade-in" style="max-width: 450px; width: 100%;">
+
+
+            <div class="page-header">
+                <h1 class="page-title">Inscription</h1>
+                <p class="page-subtitle">Créez votre compte</p>
+            </div>
+
+
+            <div id="alertContainer"></div>
+
+
+            <form id="registerForm">
+
+
+                <div class="form-group">
+                    <label for="name" class="form-label">Nom complet</label>
+                    <input type="text" id="name" class="form-input" placeholder="Jean Dupont" required minlength="3">
+                </div>
+
+
+                <div class="form-group">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" id="email" class="form-input" placeholder="votre@email.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="city" class="form-label">Ville</label>
+                    <input type="text" id="city" class="form-input" placeholder="Lomé" required>
+                </div>
+
+
+                <div class="form-group">
+                    <label for="password" class="form-label">Mot de passe</label>
+                    <input type="password" id="password" class="form-input" placeholder="••••••••" required
+                        minlength="6">
+
+                    <div id="passwordStrength" class="mt-sm"></div>
+                </div>
+
+
+                <div class="form-group">
+                    <label for="confirmPassword" class="form-label">Confirmer le mot de passe</label>
+                    <input type="password" id="confirmPassword" class="form-input" placeholder="••••••••" required>
+                </div>
+
+
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="terms" class="checkbox-input" required>
+                    <label for="terms" class="checkbox-label">
+                        J'accepte les conditions d'utilisation
+                    </label>
+                </div>
+
+
+                <button type="submit" class="btn btn-primary btn-block">
+                    S'inscrire
+                </button>
+            </form>
+
+
+            <div class="nav-links">
+                <span style="color: var(--gray-400);">Vous avez déjà un compte ?</span>
+                <a href="connexion.html" class="nav-link">Se connecter</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+
+        // ========================================
+        // INDICATEUR DE FORCE DU MOT DE PASSE
+        // ========================================
+        document.getElementById('password').addEventListener('input', function (e) {
+            const password = e.target.value;
+            const strengthDiv = document.getElementById('passwordStrength');
+
+            if (password.length === 0) {
+                strengthDiv.innerHTML = '';
+                return;
+            }
+
+            let strength = 0;
+            let color = '';
+            let text = '';
+
+            if (password.length >= 6) strength++;
+            if (password.length >= 10) strength++;
+            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+            if (/\d/.test(password)) strength++;
+            if (/[^a-zA-Z\d]/.test(password)) strength++;
+
+            if (strength <= 2) {
+                color = 'var(--error)';
+                text = 'Faible';
+            } else if (strength <= 3) {
+                color = 'var(--warning)';
+                text = 'Moyen';
+            } else {
+                color = 'var(--success)';
+                text = 'Fort';
+            }
+
+            strengthDiv.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div style="flex: 1; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;">
+                        <div style="width: ${(strength / 5) * 100}%; height: 100%; background: ${color}; transition: all 0.3s;"></div>
+                    </div>
+                    <span style="color: ${color}; font-size: 0.875rem; font-weight: 600;">${text}</span>
+                </div>
+            `;
+        });
+
+        // ========================================
+        // GESTION DU FORMULAIRE D'INSCRIPTION
+        // ========================================
+
+        document.getElementById('registerForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const city = document.getElementById('city').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const terms = document.getElementById('terms').checked;
+
+            if (password !== confirmPassword) {
+                showAlert('Les mots de passe ne correspondent pas', 'error');
+                return;
+            }
+
+            if (!terms) {
+                showAlert('Vous devez accepter les conditions d\'utilisation', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name, email, password, city })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    showAlert(data.error || 'Erreur lors de l\'inscription', 'error');
+                    return;
+                }
+
+                showAlert('Inscription réussie ! Redirection...', 'success');
+                setTimeout(() => {
+                    window.location.href = 'connexion.html';
+                }, 1500);
+
+            } catch (error) {
+                showAlert('Erreur de connexion au serveur', 'error');
+                console.error('Erreur:', error);
+            }
+        });
+
+        /**
+         * Affiche un message d'alerte temporaire
+         * @param {string} message - Le message à afficher
+         * @param {string} type - Le type d'alerte (success, error, warning)
+         */
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+
+
+            alertContainer.innerHTML = `
+                <div class="alert alert-${type}">
+                    ${message}
+                </div>
+            `;
+
+
+            setTimeout(() => {
+                alertContainer.innerHTML = '';
+            }, 3000);
+        }
+    </script>
+</body>
+
+</html>

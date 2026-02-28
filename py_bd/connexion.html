@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fr">
+<!--
+  ========================================
+  PAGE DE CONNEXION
+  ========================================
+  
+-->
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+    <title>Connexion - Application de Géolocalisation</title>
+
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <div class="page-wrapper">
+
+
+        <div class="glass-card fade-in" style="max-width: 450px; width: 100%;">
+
+
+            <div class="page-header">
+                <h1 class="page-title">Connexion</h1>
+                <p class="page-subtitle">Accédez à votre compte</p>
+            </div>
+
+            <div id="alertContainer"></div>
+
+
+            <form id="loginForm">
+
+                <div class="form-group">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" id="email" class="form-input" placeholder="votre@email.com" required>
+                </div>
+
+
+                <div class="form-group">
+                    <label for="password" class="form-label">Mot de passe</label>
+                    <input type="password" id="password" class="form-input" placeholder="••••••••" required>
+                </div>
+
+
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="remember" class="checkbox-input">
+                    <label for="remember" class="checkbox-label">
+                        Se souvenir de moi
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">
+                    Se connecter
+                </button>
+            </form>
+
+
+            <div class="nav-links">
+                <a href="#" class="nav-link">Mot de passe oublié ?</a>
+                <span style="color: var(--gray-500);">•</span>
+                <a href="inscription.html" class="nav-link">Créer un compte</a>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+
+        // ========================================
+        // GESTION DU FORMULAIRE DE CONNEXION
+        // ========================================
+
+        document.getElementById('loginForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const remember = document.getElementById('remember').checked;
+
+            try {
+                const response = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    showAlert(data.error || 'Erreur lors de la connexion', 'error');
+                    return;
+                }
+
+                const user = data.user;
+                if (remember) {
+                    localStorage.setItem('currentUser', JSON.stringify(user));
+                } else {
+                    sessionStorage.setItem('currentUser', JSON.stringify(user));
+                }
+
+                showAlert('Connexion réussie ! Redirection...', 'success');
+                setTimeout(() => {
+                    window.location.href = 'patrimoine.html';
+                }, 1500);
+
+            } catch (error) {
+                showAlert('Erreur de connexion au serveur', 'error');
+                console.error('Erreur:', error);
+            }
+        });
+
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            alertContainer.innerHTML = `
+                <div class="alert alert-${type}">
+                    ${message}
+                </div>
+            `;
+            setTimeout(() => {
+                alertContainer.innerHTML = '';
+            }, 3000);
+        }
+    </script>
+</body>
+
+</html>
